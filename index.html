@@ -14,7 +14,6 @@
             --bg-white: #ffffff;
         }
 
-        /* スクロール禁止を解除 */
         html, body {
             overflow-x: hidden;
             margin: 0;
@@ -36,7 +35,6 @@
             color: white;
             padding: 30px 10px;
             text-align: center;
-            /* スマホで改行されないよう自動調整（3remを上限） */
             font-size: clamp(24px, 7vw, 3rem);
             font-weight: 900;
             box-shadow: 0 4px 10px rgba(0,0,0,0.3);
@@ -58,7 +56,6 @@
             flex-shrink: 0;
         }
 
-        /* 左右余白を40pxに固定して美しく配置 */
         .main-wrapper {
             width: 100%;
             max-width: 1600px;
@@ -67,9 +64,7 @@
             box-sizing: border-box;
         }
 
-        .section-container {
-            margin-top: 20px;
-        }
+        .section-container { margin-top: 20px; }
 
         .section-title {
             font-size: 1.8rem;
@@ -86,7 +81,6 @@
             background: #fff5f5;
         }
 
-        /* グリッド：カード幅を少し小さく(180px)調整 */
         .grid-container {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
@@ -100,6 +94,7 @@
             text-decoration: none;
             color: inherit;
             display: block;
+            cursor: pointer;
         }
 
         .route-card {
@@ -116,29 +111,20 @@
             position: relative;
             overflow: hidden;
             box-sizing: border-box;
-            transition: transform 0.1s;
+            transition: all 0.2s ease;
         }
 
         .route-card:hover {
-            transform: scale(1.02);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 15px rgba(0,0,0,0.1);
+            border-color: #ccc;
         }
 
-        .route-name { 
-            font-size: 1.3rem; 
-            font-weight: 900; 
-            margin-bottom: 8px; 
-        }
-
-        .status-text { 
-            font-size: 1.1rem; 
-            font-weight: bold; 
-        }
+        .route-name { font-size: 1.1rem; font-weight: 900; margin-bottom: 8px; }
+        .status-text { font-size: 1.1rem; font-weight: bold; }
 
         .status-normal .status-text { color: var(--normal-green); }
-        
-        .status-alert { 
-            border: 6px solid var(--alert-red) !important; 
-        }
+        .status-alert { border: 6px solid var(--alert-red) !important; }
         .status-alert .status-text, .status-alert .route-name { color: var(--alert-red); }
 
         .flashing { animation: bg-pulse 2s infinite ease-in-out; }
@@ -150,11 +136,10 @@
 
         #time-display { font-weight: bold; font-size: 1.3rem; }
 
-        /* スマホ用微調整 */
         @media (max-width: 600px) {
             .main-wrapper { padding: 10px 20px; }
             .section-title { font-size: 1.4rem; border-left-width: 8px; }
-            .grid-container { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; }
+            .grid-container { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); }
         }
     </style>
 </head>
@@ -170,16 +155,34 @@
         <div>最終更新：<span id="time-display">--:--:--</span></div>
     </div>
 
-    <div class="main-wrapper" id="main-content">
-        </div>
+    <div class="main-wrapper" id="main-content"></div>
 
     <script>
         const gasUrl = "https://script.google.com/macros/s/AKfycbxq5skHfV1iYFjXe6Rdn2zUz56LrQvEg2yOzMi8pkB36PBu1eS87lllFBVONTEnrMA9/exec";
-        const routes = [
-            "名古屋本線", "豊川線", "常滑線" , "犬山線" , "西尾線" , "蒲郡線", "三河線", "豊田線", 
-            "河和線", "知多新線", "築港線", "瀬戸線", "津島線", 
-            "尾西線", "竹鼻線", "羽島線","広見線", "小牧線",
-        ];
+
+        // ✅ ご提示いただいた正しいリンクIDへ修正
+        const yahooRouteUrls = {
+            "名古屋本線": "https://transit.yahoo.co.jp/diainfo/208/0",
+            "豊川線": "https://transit.yahoo.co.jp/diainfo/226/0",
+            "西尾線": "https://transit.yahoo.co.jp/diainfo/209/0",
+            "蒲郡線": "https://transit.yahoo.co.jp/diainfo/212/0",
+            "三河線": "https://transit.yahoo.co.jp/diainfo/210/0",
+            "豊田線": "https://transit.yahoo.co.jp/diainfo/211/0",
+            "常滑線・空港線": "https://transit.yahoo.co.jp/diainfo/213/0", 
+            "河和線": "https://transit.yahoo.co.jp/diainfo/215/0",
+            "知多新線": "https://transit.yahoo.co.jp/diainfo/215/0",
+            "築港線": "https://transit.yahoo.co.jp/diainfo/214/0",
+            "瀬戸線": "https://transit.yahoo.co.jp/diainfo/217/0",
+            "津島線・尾西線": "https://transit.yahoo.co.jp/diainfo/201/0", 
+            "尾西線": "https://transit.yahoo.co.jp/diainfo/202/0",
+            "犬山線": "https://transit.yahoo.co.jp/diainfo/220/0",
+            "各務原線": "https://transit.yahoo.co.jp/diainfo/223/0",
+            "広見線": "https://transit.yahoo.co.jp/diainfo/221/0",
+            "小牧線": "https://transit.yahoo.co.jp/diainfo/218/0",
+            "竹鼻線・羽島線": "https://transit.yahoo.co.jp/diainfo/224/0"
+        };
+
+        const routes = Object.keys(yahooRouteUrls);
 
         let isFlashEnabled = true;
         document.getElementById("flash-toggle").addEventListener("change", (e) => {
@@ -197,14 +200,26 @@
                 let normalHtml = "";
 
                 routes.forEach(name => {
-                    const status = data[name] || "平常";
+                    let status = "平常";
+                    // 統合路線の判定
+                    if (name === "常滑線・空港線") {
+                        status = (data["常滑線"] !== "平常" || data["空港線"] !== "平常") ? "情報あり" : "平常";
+                    } else if (name === "竹鼻線・羽島線") {
+                        status = (data["竹鼻線"] !== "平常" || data["羽島線"] !== "平常") ? "情報あり" : "平常";
+                    } else if (name === "津島線・尾西線") {
+                        status = (data["津島線"] !== "平常" || data["尾西線"] !== "平常") ? "情報あり" : "平常";
+                    } else {
+                        status = data[name] || "平常";
+                    }
+
                     const isNormal = (status === "平常");
-                    const yahooUrl = `https://transit.yahoo.co.jp/diainfo/area/5`;
+                    const targetUrl = yahooRouteUrls[name];
+                    
                     let flashClass = (!isNormal && isFlashEnabled) ? "flashing" : "";
                     let fixColorClass = (!isNormal && !isFlashEnabled) ? "flash-disabled-fix" : "";
                     
                     const cardHtml = `
-                        <a href="${yahooUrl}" target="_blank" class="route-link">
+                        <a href="${targetUrl}" target="_blank" rel="noopener noreferrer" class="route-link">
                             <div class="route-card ${isNormal ? 'status-normal' : 'status-alert'} ${flashClass} ${fixColorClass}">
                                 <div class="route-name">${name}</div>
                                 <div class="status-text">${isNormal ? '● 平常通り' : '! 情報あり !'}</div>
@@ -216,25 +231,13 @@
 
                 let finalHtml = "";
                 if (alertHtml !== "") {
-                    finalHtml += `
-                    <div class="section-container alert-section">
-                        <div class="section-title">運行情報あり</div>
-                        <div class="grid-container">${alertHtml}</div>
-                    </div>
-                    <div class="spacer"></div>`;
+                    finalHtml += `<div class="section-container alert-section"><div class="section-title">運行情報あり</div><div class="grid-container">${alertHtml}</div></div><div class="spacer"></div>`;
                 }
-                finalHtml += `
-                <div class="section-container">
-                    <div class="section-title">平常運転一覧</div>
-                    <div class="grid-container">${normalHtml}</div>
-                </div>`;
+                finalHtml += `<div class="section-container"><div class="section-title">平常運転一覧</div><div class="grid-container">${normalHtml}</div></div>`;
                 
                 container.innerHTML = finalHtml;
                 timeEl.innerText = new Date().toLocaleTimeString('ja-JP');
-            } catch (error) { 
-                console.error(error);
-                timeEl.innerText = "通信エラー..."; 
-            }
+            } catch (error) { timeEl.innerText = "通信エラー..."; }
         }
         updateBoard();
         setInterval(updateBoard, 10000);
